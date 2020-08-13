@@ -31,7 +31,7 @@ void mousePressed() {
         exit();
     }
     
-    if(mouseButton == LEFT) {
+    if(mouseButton == LEFT) { // Choose mode based on mouse button
         mode = MODE_NEW_PATH;
         drawing = true;
     } else if(mouseButton == RIGHT) {
