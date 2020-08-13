@@ -43,6 +43,7 @@ void mousePressed() {
 void mouseReleased() {
     if(mode == MODE_NEW_PATH) {
         // Save path to file here
+        IO.savePath(currPath, sketchPath());
     } else if(mode == MODE_COMPARE_PATH) {
         // Compare drawn path to path saved on disk here
     }
