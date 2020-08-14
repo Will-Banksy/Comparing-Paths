@@ -1,6 +1,6 @@
 static class PathUtils {
-    final static float EPSILON = 0.001f;
-    static boolean SIMPLIFY_MADE_CHANGES = false;
+    private final static float EPSILON = 0.001f;
+    private static boolean SIMPLIFY_MADE_CHANGES = false;
     
     /**
      * This will compare the two paths, and return a float describing how similar they are (0 - 1, probably) (For now, I'm just going to return 0 or 1, similar or not similar)
@@ -23,7 +23,7 @@ static class PathUtils {
     }
     
     // Turns an array of points to an array of vectors pointing through the points
-    static ArrayList<PVector> toVectors(ArrayList<PVector> points) {
+    private static ArrayList<PVector> toVectors(ArrayList<PVector> points) {
         ArrayList<PVector> path = new ArrayList<PVector>();
         
         for(int i = 0; i < points.size() - 1; i++) {
@@ -35,12 +35,12 @@ static class PathUtils {
     }
     
     // Just a method to help readability
-    static PVector toPoint(PVector a, PVector b) {
+    private static PVector toPoint(PVector a, PVector b) {
         return b.sub(a);
     }
     
     // Merges consecutive vectors with similar angles
-    static ArrayList<PVector> simplifyVectorPath(ArrayList<PVector> path) {
+    private static ArrayList<PVector> simplifyVectorPath(ArrayList<PVector> path) {
         ArrayList<PVector> sp = new ArrayList<PVector>();
         
         for(int i = 0; i < path.size() - 1; i++) {
@@ -63,11 +63,11 @@ static class PathUtils {
         return sp;
     }
     
-    static boolean floatEquals(float num1, float num2, float epsilon) { // Epsilon is basically the error margin - that is, the difference that is allowed
+    private static boolean floatEquals(float num1, float num2, float epsilon) { // Epsilon is basically the error margin - that is, the difference that is allowed
         return Math.abs(num1 - num2) < epsilon;
     }
     
-    static PVector fromPolar(float ang, float mag) {
+    private static PVector fromPolar(float ang, float mag) {
         return new PVector((float)Math.cos(ang) * mag, (float)Math.sin(ang) * mag);
     }
 }
