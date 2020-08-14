@@ -3,7 +3,7 @@ static class PathUtils {
     private static boolean SIMPLIFY_MADE_CHANGES = false;
     
     /**
-     * This will compare the two paths, and return a float describing how similar they are (0 - 1, probably) (For now, I'm just going to return 0 or 1, similar or not similar)
+     * This will compare the two paths, and return a float describing how similar they are (0 - 1, probably) (For now, I'm just going to return 1 or 0, similar or not similar)
      * First, I'm going to try the accepted answer here: https://stackoverflow.com/questions/36106581/compare-two-paths-for-similarity
      */
     static float comparePaths(ArrayList<PVector> path1, ArrayList<PVector> path2) {
@@ -19,7 +19,17 @@ static class PathUtils {
             path2 = simplifyVectorPath(path2);
         } while(SIMPLIFY_MADE_CHANGES);
         
-        return 0; // TODO: Complete implementation of algorithm
+        float similarity = 1; // Start off assuming that the paths are equal
+        
+        if(abs(path1.size() - path2.size()) > 5) {
+            // Take off some similarity if the paths don't now contain the around about the same number of points
+            similarity /= 2;
+        }
+        println("path1 size: " + path1.size() + ", path2 size: " + path2.size());
+        
+        // Calculate the scaling factor and pair up the vectors in the path and see if the vectors are similar
+        
+        return similarity; // TODO: Complete implementation of algorithm
     }
     
     // Turns an array of points to an array of vectors pointing through the points
@@ -42,7 +52,7 @@ static class PathUtils {
     // Merges consecutive vectors with similar angles
     private static ArrayList<PVector> simplifyVectorPath(ArrayList<PVector> path) {
         ArrayList<PVector> sp = new ArrayList<PVector>();
-        
+        boolean madeChanges = false;
         for(int i = 0; i < path.size() - 1; i++) {
             PVector curr = path.get(i);
             PVector next = path.get(i + 1);
@@ -53,11 +63,16 @@ static class PathUtils {
                 float ang = lerp(curr.heading(), next.heading(), 0.5f); // Get halfway between the 2 angles, just to mitigate that error margin, epsilon
                 PVector vec = fromPolar(ang, mag);
                 sp.add(vec);
-                SIMPLIFY_MADE_CHANGES = true; // Can't return multiple values easily, this is quicker to implement
+                madeChanges = true; // Can't return multiple values easily, this is quicker to implement
             } else { // Otherwise don't change anything
                 sp.add(curr);
-                SIMPLIFY_MADE_CHANGES = false;
             }
+        }
+        
+        if(madeChanges) {
+            SIMPLIFY_MADE_CHANGES = true;
+        } else {
+            SIMPLIFY_MADE_CHANGES = false;
         }
         
         return sp;
@@ -69,5 +84,9 @@ static class PathUtils {
     
     private static PVector fromPolar(float ang, float mag) {
         return new PVector((float)Math.cos(ang) * mag, (float)Math.sin(ang) * mag);
+    }
+    
+    private static float scalingFactor(ArrayList<PVector> path1, ArrayList<PVector> path2) { // How to calculate the scaling factor? Taking the average magnitude of all the vectors and dividing one by the other might work
+        return 0; // TODO: Actually do stuff here
     }
 }

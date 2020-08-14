@@ -1,6 +1,10 @@
 // Comparing Paths
 
-// Potentially useful link: https://stackoverflow.com/questions/36106581/compare-two-paths-for-similarity
+// Potentially useful links:
+//     https://stackoverflow.com/questions/36106581/compare-two-paths-for-similarity
+//     https://stackoverflow.com/questions/18761573/java-library-for-2d-path-comparison
+
+import javax.swing.JOptionPane;
 
 boolean drawing = false; // Whether we have our mouse down and we're drawing a path
 
@@ -54,9 +58,11 @@ void mouseReleased() {
         }
     } else if(mode == MODE_COMPARE_PATH) {
         // Compare drawn path to path saved on disk here
+        float similarity = PathUtils.comparePaths(currPath, drawnPath);
+        JOptionPane.showMessageDialog(null, "Similarity: " + similarity); // Provide feedback
     }
     
-    exit(); // Exit, we've done what we needed
+    exit(); // Exit, we've done what we needed to do
 }
 
 void renderPath(ArrayList<PVector> path) {
