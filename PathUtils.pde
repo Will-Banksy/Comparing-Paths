@@ -5,6 +5,12 @@ static class PathUtils {
     /**
      * This will compare the two paths, and return a float describing how similar they are (0 - 1, probably) (For now, I'm just going to return 1 or 0, similar or not similar)
      * First, I'm going to try the accepted answer here: https://stackoverflow.com/questions/36106581/compare-two-paths-for-similarity
+     * Actually, a better approach is outlined vaguely here: https://stackoverflow.com/questions/63418337/comparing-2d-paths-for-similarity
+     * Approach:
+     * First, find bounding rectangles for both paths. It would probably be beneficial to simplify both paths beforehand
+     * Then, find the scaling factor between the two rectangles - it may be different between height and width. Keep aspect ratio by expanding - like here: https://doc.qt.io/qt-5.9/qimage.html#scaled
+     * Then, instead of positioning both paths so that they overlay as well as possible:
+     * Find a series of equidistant points on both paths, and find the standard deviation of the distances between them - that way, if the path is identical but further away, then the standard deviation will be 0, otherwise > 0
      */
     static float comparePaths(ArrayList<PVector> path1, ArrayList<PVector> path2) {
         path1 = toVectors(path1);
@@ -22,7 +28,7 @@ static class PathUtils {
         float similarity = 1; // Start off assuming that the paths are equal
         
         if(abs(path1.size() - path2.size()) > 5) {
-            // Take off some similarity if the paths don't now contain the around about the same number of points
+            // Take off some similarity if the paths don't now contain around about the same number of points
             similarity /= 2;
         }
         println("path1 size: " + path1.size() + ", path2 size: " + path2.size());
