@@ -5,6 +5,7 @@
 //     https://stackoverflow.com/questions/18761573/java-library-for-2d-path-comparison
 
 import javax.swing.JOptionPane;
+import java.awt.Rectangle;
 
 boolean drawing = false; // Whether we have our mouse down and we're drawing a path
 

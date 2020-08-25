@@ -1,41 +1,31 @@
+import java.awt.Rectangle;
+
 static class PathUtils {
     private final static float EPSILON = 0.001f;
-    private static boolean SIMPLIFY_MADE_CHANGES = false;
     
     /**
      * This will compare the two paths, and return a float describing how similar they are (0 - 1, probably) (For now, I'm just going to return 1 or 0, similar or not similar)
-     * First, I'm going to try the accepted answer here: https://stackoverflow.com/questions/36106581/compare-two-paths-for-similarity
      * Actually, a better approach is outlined vaguely here: https://stackoverflow.com/questions/63418337/comparing-2d-paths-for-similarity
      * Approach:
      * First, find bounding rectangles for both paths. It would probably be beneficial to simplify both paths beforehand
      * Then, find the scaling factor between the two rectangles - it may be different between height and width. Keep aspect ratio by expanding - like here: https://doc.qt.io/qt-5.9/qimage.html#scaled
      * Then, instead of positioning both paths so that they overlay as well as possible:
-     * Find a series of equidistant points on both paths, and find the standard deviation of the distances between them - that way, if the path is identical but further away, then the standard deviation will be 0, otherwise > 0
+     * Find a series of equidistant points on both paths, and find the standard deviation of the horizontal and vertical differences between them - that way, if the path is identical but further away, then the standard deviation will be 0, otherwise > 0
      */
     static float comparePaths(ArrayList<PVector> path1, ArrayList<PVector> path2) {
-        path1 = toVectors(path1);
-        path2 = toVectors(path2);
+        ArrayList<PVector> vecPath1 = toVectors(path1);
+        ArrayList<PVector> vecPath2 = toVectors(path2);
         
         // This is the only time, ever, do...while has been useful to me
         // We want to do it at least once to check if the path has been simplified, and therefore may be able to undergo further simplification, so we loop until no further changes have been made
-        do {
-            path1 = simplifyVectorPath(path1);
-        } while(SIMPLIFY_MADE_CHANGES);
-        do {
-            path2 = simplifyVectorPath(path2);
-        } while(SIMPLIFY_MADE_CHANGES);
+        vecPath1 = simplifyVectorPath(vecPath1);
+        vecPath2 = simplifyVectorPath(vecPath2);
+                
+        // The bounding rectangles of the paths
+        Rectangle pRect1 = boundingRect(path1);
+        Rectangle pRect2 = boundingRect(path2);
         
-        float similarity = 1; // Start off assuming that the paths are equal
-        
-        if(abs(path1.size() - path2.size()) > 5) {
-            // Take off some similarity if the paths don't now contain around about the same number of points
-            similarity /= 2;
-        }
-        println("path1 size: " + path1.size() + ", path2 size: " + path2.size());
-        
-        // Calculate the scaling factor and pair up the vectors in the path and see if the vectors are similar
-        
-        return similarity; // TODO: Complete implementation of algorithm
+        return 0; // TODO: Complete implementation of algorithm
     }
     
     // Turns an array of points to an array of vectors pointing through the points
@@ -57,31 +47,29 @@ static class PathUtils {
     
     // Merges consecutive vectors with similar angles
     private static ArrayList<PVector> simplifyVectorPath(ArrayList<PVector> path) {
-        ArrayList<PVector> sp = new ArrayList<PVector>();
         boolean madeChanges = false;
-        for(int i = 0; i < path.size() - 1; i++) {
-            PVector curr = path.get(i);
-            PVector next = path.get(i + 1);
-            
-            // If the two angles for these consecutive vectors are roughly equal, then combine them into one
-            if(floatEquals(curr.heading(), next.heading(), EPSILON)) {
-                float mag = curr.mag() + next.mag();
-                float ang = lerp(curr.heading(), next.heading(), 0.5f); // Get halfway between the 2 angles, just to mitigate that error margin, epsilon
-                PVector vec = fromPolar(ang, mag);
-                sp.add(vec);
-                madeChanges = true; // Can't return multiple values easily, this is quicker to implement
-            } else { // Otherwise don't change anything
-                sp.add(curr);
+        do {
+            madeChanges = false;
+            ArrayList<PVector> sp = new ArrayList<PVector>();
+            for(int i = 0; i < path.size() - 1; i++) {
+                PVector curr = path.get(i);
+                PVector next = path.get(i + 1);
+                
+                // If the two angles for these consecutive vectors are roughly equal, then combine them into one
+                if(floatEquals(curr.heading(), next.heading(), EPSILON)) {
+                    float mag = curr.mag() + next.mag();
+                    float ang = lerp(curr.heading(), next.heading(), 0.5f); // Get halfway between the 2 angles, just to mitigate that error margin, epsilon
+                    PVector vec = fromPolar(ang, mag);
+                    sp.add(vec);
+                    madeChanges = true; // Can't return multiple values easily, this is quicker to implement
+                } else { // Otherwise don't change anything
+                    sp.add(curr);
+                }
             }
-        }
+            path = sp;
+        } while(madeChanges);
         
-        if(madeChanges) {
-            SIMPLIFY_MADE_CHANGES = true;
-        } else {
-            SIMPLIFY_MADE_CHANGES = false;
-        }
-        
-        return sp;
+        return path;
     }
     
     private static boolean floatEquals(float num1, float num2, float epsilon) { // Epsilon is basically the error margin - that is, the difference that is allowed
@@ -92,7 +80,38 @@ static class PathUtils {
         return new PVector((float)Math.cos(ang) * mag, (float)Math.sin(ang) * mag);
     }
     
-    private static float scalingFactor(ArrayList<PVector> path1, ArrayList<PVector> path2) { // How to calculate the scaling factor? Taking the average magnitude of all the vectors and dividing one by the other might work
-        return 0; // TODO: Actually do stuff here
+    /**
+     * This method requires ArrayLists of POINTS, not VECTORS
+     */
+    private static Rectangle boundingRect(ArrayList<PVector> path) {
+        // The upper left corner of the rectangle
+        int x1 = int(path.get(0).x);
+        int y1 = int(path.get(0).y);
+        
+        // The lower right corner of the rectangle
+        int x2 = x1;
+        int y2 = y1;
+        
+        for(int i = 0; i < path.size(); i++) {
+            PVector v = path.get(i);
+            if(v.x < x1) {
+                x1 = int(v.x);
+            }
+            if(v.y < y1 ) {
+                y1 = int(v.y);
+            }
+            if(v.x > x2) {
+                x2 = int(v.x);
+            }
+            if(v.y > y2) {
+                y2 = int(v.y);
+            }
+        }
+        
+        // A -> B = B - A
+        int w = x2 - x1;
+        int h = y2 - y1;
+        
+        return new Rectangle(x1, y1, w, h);
     }
 }
